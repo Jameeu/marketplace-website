@@ -7,14 +7,20 @@ from uuid import uuid4
 import streamlit as st
 
 
+# ---------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------
 st.set_page_config(
     page_title="VendorHub Marketplace",
-    page_icon="VH",
+    page_icon="🛍️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 
+# ---------------------------------------------------------
+# Data models
+# ---------------------------------------------------------
 @dataclass
 class Product:
     id: str
@@ -40,6 +46,9 @@ class Vendor:
     products: list[Product] = field(default_factory=list)
 
 
+# ---------------------------------------------------------
+# Sample data
+# ---------------------------------------------------------
 def seed_vendors() -> list[Vendor]:
     vendors = [
         Vendor(
@@ -93,6 +102,9 @@ def seed_vendors() -> list[Vendor]:
     return vendors
 
 
+# ---------------------------------------------------------
+# Session state
+# ---------------------------------------------------------
 def ensure_state() -> None:
     if "vendors" not in st.session_state:
         st.session_state.vendors = seed_vendors()
@@ -104,6 +116,9 @@ def ensure_state() -> None:
         st.session_state.orders = []
 
 
+# ---------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------
 def all_products() -> list[Product]:
     return [
         product
@@ -120,13 +135,16 @@ def vendor_by_id(vendor_id: str) -> Vendor | None:
 def money(value: float) -> str:
     return f"${value:,.2f}"
 
+
+# ---------------------------------------------------------
+# Custom UI styling
+# ---------------------------------------------------------
 def inject_styles() -> None:
     st.markdown(
         """
         <style>
-            /* Main layout */
             .stApp {
-                background: linear-gradient(135deg, #f8fafc 0%, #eef6ff 50%, #fefce8 100%);
+                background: linear-gradient(135deg, #f8fafc 0%, #eef6ff 45%, #fff7ed 100%);
             }
 
             .block-container {
@@ -135,24 +153,37 @@ def inject_styles() -> None:
                 max-width: 1200px;
             }
 
-            /* Hero section */
             .hero {
-                border: 1px solid rgba(148, 163, 184, 0.35);
-                border-radius: 24px;
-                padding: clamp(1.4rem, 4vw, 3rem);
-                background: linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #064e3b 100%);
+                border-radius: 28px;
+                padding: clamp(1.6rem, 4vw, 3.2rem);
+                background: linear-gradient(135deg, #020617 0%, #0f172a 45%, #064e3b 100%);
                 color: white;
-                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
-                margin-bottom: 1.3rem;
+                box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+                margin-bottom: 1.4rem;
                 animation: fadeSlide 0.8s ease-in-out;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .hero::after {
+                content: "";
+                position: absolute;
+                width: 220px;
+                height: 220px;
+                border-radius: 50%;
+                background: rgba(34, 197, 94, 0.18);
+                top: -70px;
+                right: -60px;
             }
 
             .hero h1 {
-                font-size: clamp(2.2rem, 5vw, 4.5rem);
+                font-size: clamp(2.3rem, 5vw, 4.8rem);
                 line-height: 1;
-                margin: 0 0 .8rem 0;
+                margin: 0 0 .9rem 0;
                 color: white;
-                letter-spacing: -1px;
+                letter-spacing: -1.5px;
+                position: relative;
+                z-index: 2;
             }
 
             .hero p {
@@ -161,114 +192,119 @@ def inject_styles() -> None:
                 line-height: 1.7;
                 color: #dbeafe;
                 margin: 0;
+                position: relative;
+                z-index: 2;
             }
 
-            /* Metrics */
             .metric-row {
                 display: grid;
                 grid-template-columns: repeat(4, minmax(0, 1fr));
                 gap: 1rem;
-                margin: 1.2rem 0 1.5rem 0;
+                margin: 1.2rem 0 1.6rem 0;
             }
 
             .stat {
-                border: 1px solid rgba(148, 163, 184, 0.3);
-                border-radius: 20px;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                border-radius: 22px;
                 padding: 1rem;
-                background: rgba(255, 255, 255, 0.9);
-                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.07);
+                background: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
                 transition: all 0.25s ease;
             }
 
             .stat:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 18px 40px rgba(15, 23, 42, 0.13);
+                transform: translateY(-6px);
+                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
             }
 
             .stat span {
                 display: block;
                 color: #64748b;
                 font-size: .85rem;
-                font-weight: 600;
+                font-weight: 700;
             }
 
             .stat strong {
                 display: block;
                 color: #0f172a;
-                font-size: 1.55rem;
-                margin-top: .25rem;
+                font-size: 1.65rem;
+                margin-top: .3rem;
             }
 
-            /* Cards */
             .vendor-card {
                 border: 1px solid rgba(148, 163, 184, 0.35);
-                border-radius: 22px;
-                padding: 1.1rem;
-                background: rgba(255, 255, 255, 0.92);
-                min-height: 225px;
-                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+                border-radius: 24px;
+                padding: 1.15rem;
+                background: rgba(255, 255, 255, 0.95);
+                min-height: 235px;
+                box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
                 transition: all 0.28s ease;
                 animation: fadeUp 0.55s ease-in-out;
             }
 
             .vendor-card:hover {
-                transform: translateY(-7px) scale(1.015);
-                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+                transform: translateY(-8px) scale(1.015);
+                box-shadow: 0 22px 50px rgba(15, 23, 42, 0.15);
                 border-color: #22c55e;
             }
 
             .vendor-card h3 {
-                font-size: 1.08rem;
-                margin: 0 0 .4rem 0;
+                font-size: 1.12rem;
+                margin: 0 0 .45rem 0;
                 color: #0f172a;
             }
 
             .vendor-card p {
-                margin: .3rem 0;
+                margin: .35rem 0;
                 color: #475569;
                 line-height: 1.5;
+            }
+
+            .price {
+                font-size: 1.25rem;
+                font-weight: 800;
+                color: #16a34a !important;
             }
 
             .tag {
                 display: inline-flex;
                 border-radius: 999px;
-                padding: .25rem .7rem;
+                padding: .28rem .75rem;
                 color: #065f46;
                 background: #d1fae5;
                 font-size: .78rem;
-                font-weight: 700;
-                margin-bottom: .65rem;
+                font-weight: 800;
+                margin-bottom: .7rem;
             }
 
-            /* Buttons */
             div[data-testid="stButton"] button,
             div[data-testid="stFormSubmitButton"] button,
             div[data-testid="stDownloadButton"] button {
-                border-radius: 14px;
+                border-radius: 15px;
                 border: none;
                 background: linear-gradient(135deg, #16a34a 0%, #0284c7 100%);
                 color: white;
-                font-weight: 700;
+                font-weight: 800;
                 transition: all 0.25s ease;
-                box-shadow: 0 8px 18px rgba(2, 132, 199, 0.25);
+                box-shadow: 0 10px 22px rgba(2, 132, 199, 0.25);
             }
 
             div[data-testid="stButton"] button:hover,
             div[data-testid="stFormSubmitButton"] button:hover,
             div[data-testid="stDownloadButton"] button:hover {
-                transform: translateY(-3px) scale(1.02);
-                box-shadow: 0 14px 30px rgba(2, 132, 199, 0.35);
-                filter: brightness(1.05);
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 16px 35px rgba(2, 132, 199, 0.38);
+                filter: brightness(1.08);
             }
 
             div[data-testid="stButton"] button:active,
-            div[data-testid="stFormSubmitButton"] button:active {
+            div[data-testid="stFormSubmitButton"] button:active,
+            div[data-testid="stDownloadButton"] button:active {
                 transform: scale(0.96);
             }
 
-            /* Inputs */
             input, textarea, select {
-                border-radius: 12px !important;
+                border-radius: 13px !important;
             }
 
             div[data-baseweb="input"],
@@ -277,10 +313,9 @@ def inject_styles() -> None:
                 border-radius: 14px;
             }
 
-            /* Tabs */
             button[data-baseweb="tab"] {
-                font-weight: 700;
-                border-radius: 12px 12px 0 0;
+                font-weight: 800;
+                border-radius: 14px 14px 0 0;
                 transition: all 0.2s ease;
             }
 
@@ -289,20 +324,18 @@ def inject_styles() -> None:
                 color: #0369a1;
             }
 
-            /* Sidebar */
             section[data-testid="stSidebar"] {
-                background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+                background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #064e3b 100%);
             }
 
             section[data-testid="stSidebar"] * {
                 color: #e5e7eb;
             }
 
-            /* Animations */
             @keyframes fadeSlide {
                 from {
                     opacity: 0;
-                    transform: translateY(-18px);
+                    transform: translateY(-20px);
                 }
                 to {
                     opacity: 1;
@@ -321,7 +354,6 @@ def inject_styles() -> None:
                 }
             }
 
-            /* Responsive */
             @media (max-width: 760px) {
                 .metric-row {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -344,7 +376,9 @@ def inject_styles() -> None:
     )
 
 
-
+# ---------------------------------------------------------
+# Header section
+# ---------------------------------------------------------
 def render_header() -> None:
     products = all_products()
     verified_vendors = [vendor for vendor in st.session_state.vendors if vendor.status == "Verified"]
@@ -355,37 +389,56 @@ def render_header() -> None:
         """
         <section class="hero">
             <h1>VendorHub Marketplace</h1>
-            <p>Discover registered vendors, request custom items or services, buy available products, and give local businesses a polished online presence from one responsive storefront.</p>
+            <p>
+                Discover verified vendors, request custom items, buy available products,
+                and give local businesses a polished online storefront.
+            </p>
         </section>
         """,
         unsafe_allow_html=True,
     )
+
     st.markdown(
         f"""
         <div class="metric-row">
-            <div class="stat"><span>Verified vendors</span><strong>{len(verified_vendors)}</strong></div>
-            <div class="stat"><span>Available items</span><strong>{len(products)}</strong></div>
-            <div class="stat"><span>Categories</span><strong>{len(categories)}</strong></div>
-            <div class="stat"><span>Orders placed</span><strong>{len(orders)}</strong></div>
+            <div class="stat"><span>👥 Verified Vendors</span><strong>{len(verified_vendors)}</strong></div>
+            <div class="stat"><span>📦 Available Items</span><strong>{len(products)}</strong></div>
+            <div class="stat"><span>🏷️ Categories</span><strong>{len(categories)}</strong></div>
+            <div class="stat"><span>🛒 Orders Placed</span><strong>{len(orders)}</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    st.info("💡 Browse products, request custom items, register a vendor, or manage orders from the admin panel.")
 
+
+# ---------------------------------------------------------
+# Marketplace page
+# ---------------------------------------------------------
 def render_marketplace() -> None:
     st.subheader("Shop Registered Vendors")
+
     products = all_products()
     categories = ["All categories", *sorted({product.category for product in products})]
+
     selected_category = st.selectbox("Category", categories, label_visibility="collapsed")
-    search = st.text_input("Search products, vendors, or locations", placeholder="Search products, vendors, or locations")
+    search = st.text_input(
+        "Search products, vendors, or locations",
+        placeholder="Search products, vendors, or locations",
+    )
 
     filtered_products = []
     for product in products:
         vendor = vendor_by_id(product.vendor_id)
-        haystack = f"{product.name} {product.category} {product.description} {vendor.business_name if vendor else ''} {vendor.city if vendor else ''}".lower()
+        haystack = (
+            f"{product.name} {product.category} {product.description} "
+            f"{vendor.business_name if vendor else ''} {vendor.city if vendor else ''}"
+        ).lower()
+
         matches_category = selected_category == "All categories" or product.category == selected_category
         matches_search = not search or search.lower() in haystack
+
         if matches_category and matches_search:
             filtered_products.append(product)
 
@@ -395,38 +448,47 @@ def render_marketplace() -> None:
 
     for index in range(0, len(filtered_products), 3):
         columns = st.columns(3)
+
         for column, product in zip(columns, filtered_products[index : index + 3]):
             vendor = vendor_by_id(product.vendor_id)
+
             with column:
                 st.markdown(
                     f"""
                     <div class="vendor-card">
-                        <span class="tag">{product.category}</span>
+                        <span class="tag">📦 {product.category}</span>
                         <h3>{product.name}</h3>
                         <p>{product.description}</p>
-                        <p><strong>{money(product.price)}</strong></p>
-                        <p>{vendor.business_name if vendor else "Vendor"} · {vendor.city if vendor else ""}</p>
+                        <p class="price">{money(product.price)}</p>
+                        <p>🏪 {vendor.business_name if vendor else "Vendor"} · 📍 {vendor.city if vendor else ""}</p>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
-                if st.button("Add to cart", key=f"cart-{product.id}", use_container_width=True):
+
+                if st.button("🛒 Add to cart", key=f"cart-{product.id}", use_container_width=True):
                     st.session_state.cart.append(product.id)
-                    st.toast(f"{product.name} added to cart.")
+                    st.toast(f"✅ {product.name} added to cart.")
 
 
+# ---------------------------------------------------------
+# Request page
+# ---------------------------------------------------------
 def render_requests() -> None:
     st.subheader("Request Any Item or Service")
+
     verified_vendors = [vendor for vendor in st.session_state.vendors if vendor.status == "Verified"]
     vendor_options = ["Open request to all matching vendors", *[vendor.business_name for vendor in verified_vendors]]
 
     with st.form("request-form", clear_on_submit=True):
         col_a, col_b = st.columns(2)
+
         with col_a:
             customer_name = st.text_input("Your name")
             customer_email = st.text_input("Email")
             item_name = st.text_input("What do you need?")
             category = st.selectbox("Category", sorted({vendor.category for vendor in st.session_state.vendors}))
+
         with col_b:
             preferred_vendor = st.selectbox("Preferred vendor", vendor_options)
             quantity = st.number_input("Quantity", min_value=1, value=1)
@@ -437,7 +499,12 @@ def render_requests() -> None:
         submitted = st.form_submit_button("Send request", use_container_width=True)
 
     if submitted:
-        missing = [label for label, value in {"name": customer_name, "email": customer_email, "item": item_name}.items() if not value.strip()]
+        missing = [
+            label
+            for label, value in {"name": customer_name, "email": customer_email, "item": item_name}.items()
+            if not value.strip()
+        ]
+
         if missing:
             st.error("Please add your name, email, and requested item.")
         else:
@@ -457,51 +524,72 @@ def render_requests() -> None:
                     "status": "Open",
                 }
             )
+
             st.success("Request sent. Vendors can now respond with availability and pricing.")
 
     if st.session_state.requests:
         st.divider()
         st.caption("Recent requests")
+
         for request in reversed(st.session_state.requests[-5:]):
             st.markdown(
-                f"**{request['item_name']}** · {request['category']} · Qty {request['quantity']} · Budget {money(request['budget'])} · {request['status']}"
+                f"**{request['item_name']}** · {request['category']} · "
+                f"Qty {request['quantity']} · Budget {money(request['budget'])} · {request['status']}"
             )
 
 
+# ---------------------------------------------------------
+# Vendor directory
+# ---------------------------------------------------------
 def render_vendors() -> None:
     st.subheader("Vendor Directory")
+
     for index in range(0, len(st.session_state.vendors), 3):
         columns = st.columns(3)
+
         for column, vendor in zip(columns, st.session_state.vendors[index : index + 3]):
             with column:
                 st.markdown(
                     f"""
                     <div class="vendor-card">
-                        <span class="tag">{vendor.status}</span>
+                        <span class="tag">✅ {vendor.status}</span>
                         <h3>{vendor.business_name}</h3>
-                        <p>{vendor.category} · {vendor.city}</p>
+                        <p>🏷️ {vendor.category} · 📍 {vendor.city}</p>
                         <p>{vendor.description}</p>
-                        <p>{vendor.email}<br>{vendor.phone}</p>
+                        <p>📧 {vendor.email}<br>📞 {vendor.phone}</p>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
 
+# ---------------------------------------------------------
+# Vendor registration
+# ---------------------------------------------------------
 def render_vendor_registration() -> None:
     st.subheader("Register Your Vendor Business")
     st.caption("Create an online presence and make your products searchable to customers.")
 
     with st.form("vendor-registration", clear_on_submit=True):
         col_a, col_b = st.columns(2)
+
         with col_a:
             business_name = st.text_input("Business name")
             category = st.selectbox(
                 "Business category",
-                ["Food & Grocery", "Electronics", "Home & Lifestyle", "Health & Beauty", "Professional Services", "Fashion", "Other"],
+                [
+                    "Food & Grocery",
+                    "Electronics",
+                    "Home & Lifestyle",
+                    "Health & Beauty",
+                    "Professional Services",
+                    "Fashion",
+                    "Other",
+                ],
             )
             city = st.text_input("City")
             contact_name = st.text_input("Contact person")
+
         with col_b:
             email = st.text_input("Business email")
             phone = st.text_input("Phone")
@@ -514,11 +602,13 @@ def render_vendor_registration() -> None:
 
     if submitted:
         required = [business_name, city, contact_name, email, phone, first_product]
+
         if any(not value.strip() for value in required):
             st.error("Please complete the required business and product fields.")
             return
 
         vendor_id = f"vendor-{uuid4()}"
+
         product = Product(
             id=f"product-{uuid4()}",
             vendor_id=vendor_id,
@@ -527,6 +617,7 @@ def render_vendor_registration() -> None:
             price=float(first_price),
             description=product_description or "New vendor product or service.",
         )
+
         vendor = Vendor(
             id=vendor_id,
             business_name=business_name,
@@ -539,12 +630,17 @@ def render_vendor_registration() -> None:
             status="Pending review",
             products=[product],
         )
+
         st.session_state.vendors.append(vendor)
         st.success("Vendor registered. The profile is saved as pending review and ready for approval.")
 
 
+# ---------------------------------------------------------
+# Cart and checkout
+# ---------------------------------------------------------
 def render_cart() -> None:
     st.subheader("Cart & Checkout")
+
     if not st.session_state.cart:
         st.info("Your cart is empty. Add products from the marketplace to begin checkout.")
         return
@@ -559,14 +655,22 @@ def render_cart() -> None:
 
     st.markdown(f"### Total: {money(total)}")
 
+    if st.button("🧹 Clear cart", use_container_width=True):
+        st.session_state.cart = []
+        st.success("Cart cleared.")
+        st.rerun()
+
     with st.form("checkout-form", clear_on_submit=True):
         col_a, col_b = st.columns(2)
+
         with col_a:
             name = st.text_input("Customer name")
             email = st.text_input("Email address")
+
         with col_b:
             fulfillment = st.selectbox("Fulfillment", ["Delivery", "Pickup", "Vendor will confirm"])
             payment = st.selectbox("Payment method", ["Card on delivery", "Bank transfer", "Cash on pickup"])
+
         address = st.text_area("Delivery or pickup details")
         submitted = st.form_submit_button("Place order", use_container_width=True)
 
@@ -587,48 +691,68 @@ def render_cart() -> None:
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "status": "Submitted",
         }
+
         st.session_state.orders.append(order)
         st.session_state.cart = []
         st.success(f"Order {order['id']} placed. Vendors will confirm availability and final fulfillment details.")
 
 
+# ---------------------------------------------------------
+# Admin page
+# ---------------------------------------------------------
 def render_admin_snapshot() -> None:
     st.subheader("Operations Snapshot")
+
     pending_vendors = [vendor for vendor in st.session_state.vendors if vendor.status == "Pending review"]
     open_requests = [request for request in st.session_state.requests if request["status"] == "Open"]
 
     col_a, col_b, col_c = st.columns(3)
-    col_a.metric("Pending vendors", len(pending_vendors))
-    col_b.metric("Open requests", len(open_requests))
-    col_c.metric("Submitted orders", len(st.session_state.orders))
+    col_a.metric("⏳ Pending vendors", len(pending_vendors))
+    col_b.metric("📩 Open requests", len(open_requests))
+    col_c.metric("🧾 Submitted orders", len(st.session_state.orders))
 
     if pending_vendors:
         st.caption("Pending vendor approvals")
+
         for vendor in pending_vendors:
             with st.expander(vendor.business_name):
                 st.write(vendor.description)
                 st.write(f"{vendor.contact_name} · {vendor.email} · {vendor.phone}")
-                if st.button("Approve vendor", key=f"approve-{vendor.id}"):
+
+                if st.button("✅ Approve vendor", key=f"approve-{vendor.id}"):
                     vendor.status = "Verified"
                     st.success(f"{vendor.business_name} is now verified.")
                     st.rerun()
 
     if st.session_state.orders:
         st.caption("Recent orders")
+
         for order in reversed(st.session_state.orders[-5:]):
             st.write(f"**{order['id']}** · {order['customer']} · {money(order['total'])} · {order['status']}")
 
 
+# ---------------------------------------------------------
+# Main app
+# ---------------------------------------------------------
 def main() -> None:
     ensure_state()
     inject_styles()
     render_header()
 
     with st.sidebar:
-        st.title("VendorHub")
-        st.write("Marketplace tools")
-        st.metric("Cart items", len(st.session_state.cart))
-        st.caption("This prototype keeps data in the browser session. Connect a database and payments provider before production use.")
+        st.title("🛍️ VendorHub")
+        st.write("Marketplace control panel")
+
+        st.metric("🛒 Cart items", len(st.session_state.cart))
+        st.metric("📦 Products", len(all_products()))
+        st.metric("👥 Vendors", len(st.session_state.vendors))
+
+        st.divider()
+
+        st.caption(
+            "Prototype mode: data is stored only in the browser session. "
+            "For production, connect a database, authentication, and payment provider."
+        )
 
     tabs = st.tabs(
         [
@@ -640,16 +764,22 @@ def main() -> None:
             "Admin",
         ]
     )
+
     with tabs[0]:
         render_marketplace()
+
     with tabs[1]:
         render_requests()
+
     with tabs[2]:
         render_vendors()
+
     with tabs[3]:
         render_vendor_registration()
+
     with tabs[4]:
         render_cart()
+
     with tabs[5]:
         render_admin_snapshot()
 
